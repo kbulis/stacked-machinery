@@ -4,6 +4,29 @@
 	<groupId>com.unowmo.code.stacked-machinery</groupId>
 	<artifactId>machinery</artifactId>
 	<version>1.0.0</version>
+	<packaging>jar</packaging>
+	<name>stacked-machinery</name>
+	<description>Stacked state machinery with container-specific axion handling.</description>
+	<url>https://github.com/unowmo/stacked-machinery</url>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>Kirk Bulis</name>
+			<email>kirk@unowmo.com</email>
+			<organization>UNowMo, LLC</organization>
+			<organizationUrl>http://unowmo.com</organizationUrl>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:git://github.com/unowmo/stacked-machinery.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:unowmo/stacked-machinery.git</developerConnection>
+		<url>https://github.com/unowmo/stacked-machinery/tree/master</url>
+	</scm>	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -33,6 +56,46 @@
 						</manifestEntries>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.4</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
