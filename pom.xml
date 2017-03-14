@@ -1,11 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<name>Machinery</name>
+	<name>stacked-machinery</name>
 	<groupId>com.unowmo.code.stacked-machinery</groupId>
-	<artifactId>machinery</artifactId>
+	<artifactId>stacked-machinery</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
-	<name>stacked-machinery</name>
 	<description>Stacked state machinery with container-specific axion handling.</description>
 	<url>https://github.com/unowmo/stacked-machinery</url>
 	<licenses>
