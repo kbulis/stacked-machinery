@@ -1,0 +1,110 @@
+{
+	"machines": [{
+		"name": "default",
+		"states": [{
+			"label": "start",
+			"trans": [{
+				"event": "started",
+				"state": "ini01"
+			}]
+		}, {
+			"label": "ini01",
+			"entry": "set:label=counter,value=0",
+			"trans": [{
+				"state": "ini02"
+			}]
+		}, {
+			"label": "ini02",
+			"entry": "set:label=running,value=false",
+			"trans": [{
+				"state": "pivot"
+			}]
+		}, {
+			"label": "pivot",
+			"trans": [{
+				"event": "testing",
+				"state": "tst01"
+			}, {
+				"event": "takeoff",
+				"state": "tst03"
+			}, {
+				"event": "leaving",
+				"state": "tst04"
+			}]
+		}, {
+			"label": "tst01",
+			"entry": "start:machine=testing,index=((counter)),ready=((running))",
+			"trans": [{
+				"state": "tst02"
+			}]
+		}, {
+			"label": "tst02",
+			"entry": "inc:label=counter,value=1",
+			"trans": [{
+				"state": "pivot"
+			}]
+		}, {
+			"label": "tst03",
+			"entry": "set:label=running,value=true",
+			"trans": [{
+				"state": "pivot"
+			}]
+		}, {
+			"label": "tst04",
+			"entry": "patch:command=testing,status=announce",
+			"trans": [{
+				"state": "pivot"
+			}]
+		}]
+	}, {
+		"name": "testing",
+		"states": [{
+			"label": "start",
+			"trans": [{
+				"event": "started",
+				"state": "chk01"
+			}]
+		}, {
+			"label": "chk01",
+			"entry": "equ:label=ready,value=true",
+			"trans": [{
+				"event": "notsame",
+				"state": "pause"
+			}, {
+				"event": "success",
+				"state": "tst01"
+			}]
+		}, {
+			"label": "pause",
+			"trans": [{
+				"event": "takeoff",
+				"state": "tst01"
+			}]
+		}, {
+			"label": "tst01",
+			"entry": "set:label=counter,value=0",
+			"leave": "",
+			"trans": [{
+				"state": "tst02"
+			}]
+		}, {
+			"label": "tst02",
+			"entry": "equ:label=counter,value=10",
+			"trans": [{
+				"event": "success",
+				"state": "final"
+			}, {
+				"state": "tst03"
+			}]
+		}, {
+			"label": "tst03",
+			"entry": "inc:label=counter,value=1",
+			"trans": [{
+				"state": "tst02"
+			}]
+		}, {
+			"label": "final",
+			"leave": "raise:event=leaving"
+		}]
+	}]
+}
