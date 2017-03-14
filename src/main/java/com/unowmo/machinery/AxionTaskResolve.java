@@ -35,17 +35,44 @@ public abstract class AxionTaskResolve {
 	/**
 	 * Handles labeled axion and produces result event (or empty if no event
 	 * intended).
+	 * 
+	 * @param axionLabel label of axion to execute
+	 * @param axionPairs pairs of named-value args
+	 * 
+	 * @return string response for follow on
 	 */
 	protected abstract String execute(final String axionLabel, final LabeledValuePair ... axionPairs);
 
 	/**
 	 * Broadcast to container from handling entity arbitrary command with
 	 * status to notify coupled machines of application-specific requests.
+	 * 
+	 * @param eventCommand command to broadcast to listeners
+	 * @param eventStatus status of broadcast command
 	 */
 	protected abstract void command(final String eventCommand, final String eventStatus);
 
 	/**
-	 * ... 
+	 * Splits an axion string into its label and named-value
+	 * pairs for subsequent handling by the state machine.
+	 * 
+	 * Example:
+	 * <pre>
+	 * {@code"dosomething:label=argument,value=5,extra=foo"}
+	 * 
+	 * splits into
+	 * 
+	 * { "dosomething"
+	 * , [ "label" = "argument"
+	 *   , "value" = "5"
+	 *   , "extra" = "foo"
+	 *   ]
+	 * }
+	 * </pre>
+	 * 
+	 * @param axion axion string declared in state descriptor
+	 * 
+	 * @return label and parameters for subsequent handling
 	 */
 	protected Part split(final String axion) {
 		Part breakOut = new Part();
@@ -90,6 +117,8 @@ public abstract class AxionTaskResolve {
 
 	/**
 	 * Records to log arbitrary message from resolving container.
+	 * 
+	 * @param message string to write to the log
 	 */
 	protected abstract void log(final String message);
 

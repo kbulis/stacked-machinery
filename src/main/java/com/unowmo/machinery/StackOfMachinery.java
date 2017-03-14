@@ -679,8 +679,9 @@ public class StackOfMachinery {
 	 * external event and all of its side effects. We use the currently set
 	 * axion task resolver hook throughout processing of this event.
 	 * 
-	 * @param external
+	 * @param external event to process
 	 * 
+	 * @return this instance
 	 */
 	public StackOfMachinery handleEvent(final String external) {
 		final AxionTaskResolve contain = this.resolve;
@@ -873,8 +874,9 @@ public class StackOfMachinery {
 	 * Reset entry graph and point to new library. We clean house and start it
 	 * all over again.
 	 * 
-	 * @param library
+	 * @param library deserialized set of machine declarations
 	 * 
+	 * @return this instance
 	 */
 	public StackOfMachinery initialize(final AxionTaskLibrary library) {
 		this.entries.graphed.clear();
@@ -908,8 +910,9 @@ public class StackOfMachinery {
 	 * hook, but we expect updates to be atomic. That said, try to set your app
 	 * resolver hook before starting the stack.
 	 * 
-	 * @param resolve
+	 * @param updated new hook for handling machine axions
 	 * 
+	 * @return this instance
 	 */
 	public StackOfMachinery setResolve(final AxionTaskResolve updated) {
 		if (updated != null)
@@ -922,6 +925,8 @@ public class StackOfMachinery {
 	
 	/**
 	 * Construct default.
+	 * 
+	 * @param library deserialized set of machine declarations
 	 */
 	public StackOfMachinery(final AxionTaskLibrary library) {
 		this.initialize(library);
