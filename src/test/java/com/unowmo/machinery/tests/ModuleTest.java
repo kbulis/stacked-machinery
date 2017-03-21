@@ -6,7 +6,7 @@ import com.google.gson.*;
 import com.unowmo.machinery.*;
 
 /**
- * A simple test harness for locally invoking your Lambda function handler.
+ * A simple test harness for locally invoking your module.
  */
 public class ModuleTest {
 
