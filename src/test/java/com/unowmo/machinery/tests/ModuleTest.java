@@ -20,7 +20,9 @@ public class ModuleTest {
     	final StackOfMachinery stacked = new StackOfMachinery();
     	final Counter hasAnnounced = new Counter();
 
-    	try
+		System.out.println("Testing...");
+
+		try
     	{
 	    	InputStream input = this.getClass().getClassLoader().getResourceAsStream("testing.library");
 			
@@ -73,10 +75,22 @@ public class ModuleTest {
 				, hasAnnounced.count
 				);
     	}
-    	catch (Exception eX)
-    	{
-    		Assert.fail(eX.getMessage());
-    	}
+		catch (AssertionError eX)
+		{
+			throw eX;
+		}
+		catch (Exception eX)
+		{
+    		Assert.fail
+    			( "Oops because " + eX.getMessage().toLowerCase()
+    			);
+		}
+		finally
+		{
+			System.out.println
+				( "Done."
+				);
+		}
     }
 
     private static Gson mapper = new Gson();
