@@ -714,10 +714,11 @@ public class StackOfMachinery {
 	 * axion task resolver hook throughout processing of this event.
 	 * 
 	 * @param external event to process
+	 * @param target specific layer to limit handling, or null for all
 	 * 
 	 * @return this instance
 	 */
-	public StackOfMachinery handleEvent(final String external) {
+	private StackOfMachinery handleEvent(final String external, final String target) {
 		final AxionTaskResolve contain = this.resolve;
 		
 		if (external.isEmpty() == false)
@@ -733,7 +734,10 @@ public class StackOfMachinery {
 			
 			for (final Entry entry : this.entries.graphed)
 			{
-				queuing.add(new Event(external, entry.target));
+				if (entry.target.uniqued.contentEquals(target) || target.isEmpty() == true)
+				{
+					queuing.add(new Event(external, entry.target));
+				}
 			}
 
 			if (queuing.isEmpty() == false)
@@ -904,6 +908,21 @@ public class StackOfMachinery {
 		return this;
 	}
 
+	/**
+	 * Process external event and queue up side effects to be handled in order
+	 * as we progress. We run through the axion results as intermediate events,
+	 * so no external event can interrupt the complete processing of a prior
+	 * external event and all of its side effects. We use the currently set
+	 * axion task resolver hook throughout processing of this event.
+	 * 
+	 * @param external event to process
+	 * 
+	 * @return this instance
+	 */
+	public StackOfMachinery handleEvent(final String external) {
+		return this.handleEvent(external, "");
+	}
+	
 	/**
 	 * Reset entry graph and point to new library. We clean house and start it
 	 * all over again.

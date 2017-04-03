@@ -9,7 +9,7 @@ import java.util.*;
  * @author Kirk Bulis
  *
  */
-public class MachineryTimeout {
+public abstract class MachineryTimeout {
 	private final List<Timer> timers = new ArrayList<Timer>();
 
 	/**
@@ -30,11 +30,11 @@ public class MachineryTimeout {
 	 */
 	private static class Timer {
 
-		final StackOfMachinery.Layer target;
+		final String target;
 		final String event;
 		final long when;
 
-		Timer(final StackOfMachinery.Layer target, final String event, final long when) {
+		Timer(final String target, final String event, final long when) {
 			this.target = target;
 			this.event = event;
 			this.when = when;
@@ -43,17 +43,30 @@ public class MachineryTimeout {
 	}
 
 	/**
+	 * Signals to defining container or subclass that a timer has expired on the
+	 * timeout processing thread. Make sure to synchronize access to the target.
+	 * 
+	 * @param target event target
+	 * @param event event to handle on timeout
+	 */
+	protected abstract void onTimeout(final String target, final String event);
+	
+	/**
 	 * Inserts new active timer into the current set. Timers are executed in
 	 * chronological order, with expired timeouts processing immediately.
+	 * 
+	 * @param target event target
+	 * @param event event to handle on timeout
+	 * @param when time to handle event (epoch time in ms)
 	 */
-	void register(final StackOfMachinery.Layer target, final String event, final long when)
+	void register(final String target, final String event, final long when)
 	{
 		int posi = 0;
 
 		synchronized (this.timers) {
 			for (final Timer timer : this.timers)
 			{
-				if (timer.target == target && timer.event.equalsIgnoreCase(event) == true)
+				if (timer.target.contentEquals(target) == true && timer.event.equalsIgnoreCase(event) == true)
 				{
 					this.timers.remove(posi);
 					
