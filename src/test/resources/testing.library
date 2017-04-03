@@ -79,6 +79,8 @@
 			"trans": [{
 				"event": "takeoff",
 				"state": "tst01"
+			}, {
+				"state": "tstZZ"
 			}]
 		}, {
 			"label": "tst01",

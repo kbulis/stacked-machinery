@@ -13,9 +13,10 @@ public class MachineryTimeout {
 	private final List<Timer> timers = new ArrayList<Timer>();
 
 	/**
-	 * ...
+	 * Runnable container of a set of active timers.
 	 */
 	private static abstract class Processor implements Runnable {
+
 		final List<Timer> timers;
 		
 		private Processor(final List<Timer> timers) {
@@ -25,9 +26,10 @@ public class MachineryTimeout {
 	}
 
 	/**
-	 * ...
+	 * Description of a specific, active timer.
 	 */
 	private static class Timer {
+
 		final StackOfMachinery.Layer target;
 		final String event;
 		final long when;
@@ -41,7 +43,8 @@ public class MachineryTimeout {
 	}
 
 	/**
-	 * ...
+	 * Inserts new active timer into the current set. Timers are executed in
+	 * chronological order, with expired timeouts processing immediately.
 	 */
 	void register(final StackOfMachinery.Layer target, final String event, final long when)
 	{
@@ -85,7 +88,9 @@ public class MachineryTimeout {
 	}
 
 	/**
-	 * ...
+	 * Internal method for handling active timers. Each call to process restarts
+	 * looping through active timers when not currently running. Only one thread
+	 * should be active at any time.
 	 */
 	private void process() {
 		synchronized (this.timers) {
@@ -133,7 +138,7 @@ public class MachineryTimeout {
 	}
 
 	/**
-	 * ...
+	 * Erases all current timers.
 	 */
 	void clear() {
 		synchronized (this.timers) {

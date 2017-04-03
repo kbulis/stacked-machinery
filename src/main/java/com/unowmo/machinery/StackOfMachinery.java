@@ -14,7 +14,7 @@ public class StackOfMachinery {
 	private AxionTaskLibrary library = new AxionTaskLibrary();
 	private ListOfGraphEntry entries = new ListOfGraphEntry();
 	private AxionTaskResolve resolve = new AxionTaskResolve() {
-		protected String execute(final String axionLabel, final LabeledValuePair... axionPairs) {
+		protected String execute(final String axionLabel, final LabeledValuePair ... axionPairs) {
 			return "";
 		}
 		protected void command(final String eventCommand, final String eventStatus) {
@@ -24,7 +24,8 @@ public class StackOfMachinery {
 	};
 
 	/**
-	 * ...
+	 * Internal interface for handling external events' side effects within the
+	 * context of processing said events.
 	 */
 	private static interface QueuedEvents {
 
@@ -60,7 +61,8 @@ public class StackOfMachinery {
 	}
 
 	/**
-	 * ... 
+	 * Internal interface for dealing with layers during navigation through the
+	 * hierarchy of graphed layer entries.
 	 */
 	private interface OnGraphedEntries {
 
@@ -69,7 +71,8 @@ public class StackOfMachinery {
 	}
 	
 	/**
-	 * ...
+	 * Container of layers. Stores layers in a parent-child hierarchy, where
+	 * each entry points to its parent. Traversable by closure.
 	 */
 	private static class ListOfGraphEntry {
 		final List<Entry> graphed = new ArrayList<Entry>();
@@ -94,7 +97,7 @@ public class StackOfMachinery {
 	}
 	
 	/**
-	 * ...
+	 * Container of hierarchically graphed layer entries. 
 	 */
 	private static class Entry {
 		private final Entry parent;
@@ -108,7 +111,7 @@ public class StackOfMachinery {
 	}
 
 	/**
-	 * ... 
+	 * Simple container for counts in string format.
 	 */
 	private static class Count {
 		private Integer count = 0;
@@ -126,7 +129,7 @@ public class StackOfMachinery {
 	}
 	
 	/**
-	 * ...
+	 * Internal container.
 	 */
 	static class Layer extends Frames {
 		private final TransitionStates machine;
@@ -184,7 +187,9 @@ public class StackOfMachinery {
 
 								if (state.leave.isEmpty() == false)
 								{
-									// ...
+									// Process axion on leaving the current state before
+									// processing any axion associated with entering the
+									// target state. We ignore the result.
 									
 									AxionTaskResolve.Part part = this.expand(resolve.split(state.leave));
 
@@ -234,7 +239,8 @@ public class StackOfMachinery {
 								
 								if (state.entry.isEmpty() == false)
 								{
-									// ...
+									// Handle the axion associated with transitioning to
+									// the target state.
 									
 									AxionTaskResolve.Part part = this.expand(resolve.split(state.entry));
 
@@ -388,19 +394,25 @@ public class StackOfMachinery {
 											);
 									}
 
-									// ...
+									// After processing any associated entry axion, we
+									// figure out the next state based on the result of
+									// that axion.
 									
 									followTo = state.followOn
 										( opRes
 										);
 									
-									// ...
+									// Keep track of axion results for recalling by
+									// subsequent axions.
 									
 									previous = opRes;
 								}
 								else
 								{
-									// ...
+									// No axion, but there may be an automatic path
+									// traversal to take. If so, take it. If not,
+									// we expect and empty result, which should be
+									// ignored and end traversal.
 									
 									followTo = state.followOn
 										( ""
@@ -423,7 +435,29 @@ public class StackOfMachinery {
 							}
 						}
 
-						this.current = i;
+						if (i != this.current)
+						{
+							this.current = i;
+						}
+						else
+						{
+							resolve.log
+								( String.format
+									( "(%s) state '%s' on '%s' -> '%s' is invalid transition (not found)"
+									, this.uniqued
+									, state.label
+									, external
+									, followTo
+									)
+								);
+							
+							followTo = "";
+						}
+
+						if (followTo.isEmpty() == true)
+						{
+							break;
+						}
 					}
 				}
 					
@@ -525,7 +559,7 @@ public class StackOfMachinery {
 	}
 
 	/**
-	 * ...
+	 * Internal container.
 	 */
 	static class Frames {
 		final List<Frame> frames = new ArrayList<Frame>();
@@ -612,13 +646,13 @@ public class StackOfMachinery {
 	}
 
 	/**
-	 * ...
+	 * Internal container.
 	 */
 	static class Frame extends Values {
 	}
 
 	/**
-	 * ...
+	 * Internal container.
 	 */
 	static class Values {
 		final List<Value> values = new ArrayList<Value>();
@@ -643,7 +677,7 @@ public class StackOfMachinery {
 	}
 
 	/**
-	 * ...
+	 * Internal container.
 	 */
 	static class Value {
 		
@@ -658,7 +692,7 @@ public class StackOfMachinery {
 	}
 
 	/**
-	 * ...
+	 * Internal container.
 	 */
 	static class Event {
 
