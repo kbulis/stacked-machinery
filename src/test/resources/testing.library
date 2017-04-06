@@ -32,7 +32,7 @@
 				"state": "tst04"
 			}, {
 				"event": "leaving",
-				"state": "tst06"
+				"state": "tst07"
 			}]
 		}, {
 			"label": "tst01",
@@ -53,20 +53,25 @@
 				"state": "pivot"
 			}]
 		}, {
-		}, {
 			"label": "tst04",
-			"entry": "set:label=running,value=true",
+			"entry": "trace:debug=((counter)) test machines should now proceed",
 			"trans": [{
 				"state": "tst05"
 			}]
 		}, {
 			"label": "tst05",
+			"entry": "set:label=running,value=true",
+			"trans": [{
+				"state": "tst06"
+			}]
+		}, {
+			"label": "tst06",
 			"entry": "blast:event=proceed",
 			"trans": [{
 				"state": "pivot"
 			}]
 		}, {
-			"label": "tst06",
+			"label": "tst07",
 			"entry": "patch:command=testing,status=announce",
 			"trans": [{
 				"state": "pivot"

@@ -114,6 +114,15 @@ public class StackOfMachinery {
 		 */
 		String raise(final String event, final Layer who);
 
+		/**
+		 * Writes realized tracing message to the logger.
+		 * 
+		 * @param trace
+		 * @param who
+		 * @return
+		 */
+		String trace(final String debug, final Layer who);
+
 		String pop(final Layer who);
 
 	}
@@ -258,6 +267,14 @@ public class StackOfMachinery {
 											);
 									}
 									else
+									if (part.label.equalsIgnoreCase("trace") == true)
+									{
+										handler.trace
+											( part.valueOf("debug", "")
+											, this
+											);
+									}
+									else
 									if (part.label.equalsIgnoreCase("blast") == true)
 									{
 										handler.blast
@@ -319,6 +336,14 @@ public class StackOfMachinery {
 										opRes = handler.start
 											( part.valueOf("machine", "")
 											, part.list
+											, this
+											);
+									}
+									else
+									if (part.label.equalsIgnoreCase("trace") == true)
+									{
+										opRes = handler.trace
+											( part.valueOf("debug", "")
 											, this
 											);
 									}
@@ -586,6 +611,16 @@ public class StackOfMachinery {
 							}
 						}
 						else
+						if (part.label.equalsIgnoreCase("blast") == true)
+						{
+							String event = part.valueOf("event", "");
+							
+							if (event.isEmpty() == false)
+							{
+								handler.blast(event, this);
+							}
+						}
+						else
 						if (part.label.equalsIgnoreCase("raise") == true)
 						{
 							String event = part.valueOf("event", "");
@@ -607,13 +642,64 @@ public class StackOfMachinery {
 		private AxionTaskResolve.Part expand(final AxionTaskResolve.Part part) {
 			for (final LabeledValuePair pair : part.list)
 			{
-				int l = pair.value.length();
+				String text = pair.value;
+				int p = 0, s = 0, f = 0;
 
-				if (l > 4)
+				for (int i = 0, l = text.length(); i < l; ++i)
 				{
-					if (pair.value.charAt(0) == '(' && pair.value.charAt(1) == '(' && pair.value.charAt(l - 2) == ')' && pair.value.charAt(l - 1) == ')')
+					char c = text.charAt(i);
+					
+					switch (p)
 					{
-						pair.value = this.matchUp(pair.value.substring(2, l - 2).trim(), "");
+						case 0:
+						{
+							if (c == '(')
+							{
+								p = 1;
+							}
+						}
+						break;
+						case 1:
+						{
+							if (c == '(')
+							{
+								p = 2;
+								s = i;
+							}
+							else
+							{
+								p = 0;
+							}
+						}
+						break;
+						case 2:
+						{
+							if (c == ')')
+							{
+								p = 3;
+								f = i;
+							}
+							else
+							{
+								p = 2;
+							}
+						}
+						break;
+						case 3:
+						{
+							if (f > s)
+							{
+								pair.value = pair.value.replace
+									( "((" + text.substring(s + 1, f) + "))"
+									, this.matchUp(text.substring(s + 1, f), "")
+									);
+							}
+
+							s = 0;
+							f = 0;
+							p = 0;
+						}
+						break;
 					}
 				}
 			}
@@ -991,6 +1077,28 @@ public class StackOfMachinery {
 						return "failure";
 					}
 				
+					public String trace(final String debug, final Layer who) {
+						for (final Entry entry : this.hierarchy.graphed)
+						{
+							if (entry.target != who)
+							{
+								continue;
+							}
+
+							contain.log
+								( String.format
+									( "(%s) %s"
+									, who.uniqued
+									, debug
+									)
+								);
+
+							return "success";
+						}
+						
+						return "failure";
+					}
+					
 					public String pop(final Layer who) {
 						for (final Entry entry : this.hierarchy.graphed)
 						{
