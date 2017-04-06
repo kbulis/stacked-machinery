@@ -3,7 +3,7 @@
 	<name>StackedMachinery</name>
 	<groupId>com.unowmo.code.stacked-machinery</groupId>
 	<artifactId>stacked-machinery</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 	<description>Stacked state machinery with container-specific axion handling.</description>
 	<url>https://github.com/unowmo/stacked-machinery</url>

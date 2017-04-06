@@ -17,10 +17,10 @@ public abstract class MachineryTimeout {
 	 */
 	private static abstract class Processor implements Runnable {
 
-		final List<Timer> timers;
+		final MachineryTimeout that;
 		
-		private Processor(final List<Timer> timers) {
-			this.timers = timers;
+		private Processor(final MachineryTimeout timeout) {
+			this.that = timeout;
 		}
 
 	}
@@ -50,6 +50,11 @@ public abstract class MachineryTimeout {
 	 * @param event event to handle on timeout
 	 */
 	protected abstract void onTimeout(final String target, final String event);
+
+	/**
+	 * Signals to defining container or subclass there are no more timers queued.
+	 */
+	protected abstract void onAllDone();
 	
 	/**
 	 * Inserts new active timer into the current set. Timers are executed in
@@ -109,36 +114,44 @@ public abstract class MachineryTimeout {
 		synchronized (this.timers) {
 			if (this.timers.size() == 1)
 			{
-				new Thread(new Processor(this.timers) {
+				new Thread(new Processor(this) {
 					public void run() {
-						synchronized (this.timers) {
-							while (this.timers.isEmpty() == false)
-							{
-								long now = new Date().getTime();
-								Timer next = this.timers.get(0);
-
-								if (next.when > now)
+						try
+						{
+							synchronized (that.timers) {
+								while (that.timers.isEmpty() == false)
 								{
-									try
-									{
-										this.timers.wait(next.when - now);
-									}
-									catch (Exception eX)
-									{
-									}
-								}
-
-								if (this.timers.isEmpty() == false)
-								{
-									now = new Date().getTime();
-									next = this.timers.get(0);
-									
+									long now = new Date().getTime();
+									Timer next = that.timers.get(0);
+	
 									if (next.when <= now)
 									{
-										// inject event
+										that.timers.remove(0);
+										
+										try
+										{
+											that.onTimeout(next.target, next.event);
+										}
+										catch (Exception eX)
+										{
+										}
+									}
+									else
+									{
+										try
+										{
+											that.timers.wait(next.when - now);
+										}
+										catch (Exception eX)
+										{
+										}
 									}
 								}
 							}
+						}
+						finally
+						{
+							that.onAllDone();
 						}
 					}
 				}).start();

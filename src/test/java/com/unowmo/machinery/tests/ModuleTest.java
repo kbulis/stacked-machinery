@@ -68,6 +68,10 @@ public class ModuleTest {
 					( external
 					);
 			}
+
+			synchronized(stacked) {
+				stacked.wait(5000);
+			}
 			
 			Assert.assertEquals
 				( "Some testing runs haven't announced"

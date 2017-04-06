@@ -28,8 +28,11 @@
 				"event": "takeoff",
 				"state": "tst03"
 			}, {
-				"event": "leaving",
+				"event": "advance",
 				"state": "tst04"
+			}, {
+				"event": "leaving",
+				"state": "tst06"
 			}]
 		}, {
 			"label": "tst01",
@@ -45,12 +48,25 @@
 			}]
 		}, {
 			"label": "tst03",
-			"entry": "set:label=running,value=true",
+			"entry": "timer:expires=1000,event=advance",
 			"trans": [{
 				"state": "pivot"
 			}]
 		}, {
+		}, {
 			"label": "tst04",
+			"entry": "set:label=running,value=true",
+			"trans": [{
+				"state": "tst05"
+			}]
+		}, {
+			"label": "tst05",
+			"entry": "blast:event=proceed",
+			"trans": [{
+				"state": "pivot"
+			}]
+		}, {
+			"label": "tst06",
 			"entry": "patch:command=testing,status=announce",
 			"trans": [{
 				"state": "pivot"
@@ -77,7 +93,7 @@
 		}, {
 			"label": "pause",
 			"trans": [{
-				"event": "takeoff",
+				"event": "proceed",
 				"state": "tst01"
 			}, {
 				"state": "tstZZ"

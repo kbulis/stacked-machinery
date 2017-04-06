@@ -13,16 +13,45 @@ import java.util.*;
 public class StackOfMachinery {
 	private AxionTaskLibrary library = new AxionTaskLibrary();
 	private ListOfGraphEntry entries = new ListOfGraphEntry();
-	private AxionTaskResolve resolve = new AxionTaskResolve() {
-		protected String execute(final String axionLabel, final LabeledValuePair ... axionPairs) {
-			return "";
+	private AxionTaskResolve resolve = new DefaultedResolve();
+	private MachineryTimeout timeout = new MachineryTimeout() {
+		protected void onTimeout(final String target, final String event) {
+			StackOfMachinery.this.handleEvent(event, target);
 		}
-		protected void command(final String eventCommand, final String eventStatus) {
-		}
-		protected void log(final String message) {
+		protected void onAllDone() {
+			synchronized (StackOfMachinery.this) {
+				StackOfMachinery.this.notifyAll();
+			}
 		}
 	};
 
+	/**
+	 * Default axion resolver implementation. If nothing assigned to the this
+	 * container stack, then the default implementation is used.
+	 */
+	private static class DefaultedResolve extends AxionTaskResolve {
+
+		/**
+		 * Default implementation.
+		 */
+		protected String execute(final String axionLabel, final LabeledValuePair ... axionPairs) {
+			return "";
+		}
+
+		/**
+		 * Default implementation.
+		 */
+		protected void command(final String eventCommand, final String eventStatus) {
+		}
+
+		/**
+		 * Default implementation.
+		 */
+		protected void log(final String message) {
+		}
+		
+	}
+	
 	/**
 	 * Internal interface for handling external events' side effects within the
 	 * context of processing said events.
@@ -36,6 +65,7 @@ public class StackOfMachinery {
 		 * @param machine
 		 * @param frame
 		 * @param who
+		 * @return
 		 */
 		String start(final String machine, final LabeledValuePair [] frame, final Layer who);
 
@@ -47,13 +77,41 @@ public class StackOfMachinery {
 		 * @param command
 		 * @param status
 		 * @param who
+		 * @return
 		 */
 		String patch(final String command, final String status, final Layer who);
+
+		/**
+		 * Registers timeout to raise a particular event after now + expires
+		 * milliseconds. Event is raised on registering layer.
+		 * 
+		 * @param expires
+		 * @param event
+		 * @param who
+		 * @return
+		 */
+		String timer(final String expires, final String event, final Layer who);
 
 		String write(final String label, final String value, final Layer who);
 
 		String count(final LabeledValuePair [] tuple, final Layer who);
 
+		/**
+		 * Blasts particular event to the calling layer's descendants.
+		 * 
+		 * @param event
+		 * @param who
+		 * @return
+		 */
+		String blast(final String event, final Layer who);
+
+		/**
+		 * Raises particular event to the calling layer's predecessor.
+		 * 
+		 * @param event
+		 * @param who
+		 * @return
+		 */
 		String raise(final String event, final Layer who);
 
 		String pop(final Layer who);
@@ -183,8 +241,6 @@ public class StackOfMachinery {
 							
 							if (match.label.equalsIgnoreCase(followTo) == true)
 							{
-								String opRes;
-
 								if (state.leave.isEmpty() == false)
 								{
 									// Process axion on leaving the current state before
@@ -195,23 +251,36 @@ public class StackOfMachinery {
 
 									if (part.label.equalsIgnoreCase("start") == true)
 									{
-										String machine = part.valueOf("machine", "");
-										
-										if (machine.isEmpty() == false)
-										{
-											handler.start(machine, part.list, this);
-										}
+										handler.start
+											( part.valueOf("machine", "")
+											, part.list
+											, this
+											);
+									}
+									else
+									if (part.label.equalsIgnoreCase("blast") == true)
+									{
+										handler.blast
+											( part.valueOf("event", "")
+											, this
+											);
+									}
+									else
+									if (part.label.equalsIgnoreCase("raise") == true)
+									{
+										handler.raise
+											( part.valueOf("event", "")
+											, this
+											);
 									}
 									else
 									if (part.label.equalsIgnoreCase("patch") == true)
 									{
-										String command = part.valueOf("command", "");
-										String status = part.valueOf("status", "");
-										
-										if (command.isEmpty() == false)
-										{
-											handler.patch(command, status, this);
-										}
+										handler.patch
+											( part.valueOf("command", "")
+											, part.valueOf("status", "")
+											, this
+											);
 									}
 									else
 									if (part.label.equalsIgnoreCase("set") == true)
@@ -243,12 +312,21 @@ public class StackOfMachinery {
 									// the target state.
 									
 									AxionTaskResolve.Part part = this.expand(resolve.split(state.entry));
+									String opRes;
 
 									if (part.label.equalsIgnoreCase("start") == true)
 									{
 										opRes = handler.start
 											( part.valueOf("machine", "")
 											, part.list
+											, this
+											);
+									}
+									else
+									if (part.label.equalsIgnoreCase("blast") == true)
+									{
+										opRes = handler.blast
+											( part.valueOf("event", "")
 											, this
 											);
 									}
@@ -266,6 +344,15 @@ public class StackOfMachinery {
 										opRes = handler.patch
 											( part.valueOf("command", "")
 											, part.valueOf("status", "")
+											, this
+											);
+									}
+									else
+									if (part.label.equalsIgnoreCase("timer") == true)
+									{
+										opRes = handler.timer
+											( part.valueOf("expires", "")
+											, part.valueOf("event", "")
 											, this
 											);
 									}
@@ -772,7 +859,16 @@ public class StackOfMachinery {
 											, child
 											)
 										);
-									
+
+									contain.log
+										( String.format
+											( "(%s) starting layer %s '%s'"
+											, who.uniqued
+											, child.uniqued
+											, machine.name
+											)
+										);
+
 									return "success";
 								}
 							}
@@ -796,6 +892,29 @@ public class StackOfMachinery {
 							return "success";
 						}
 						
+						return "failure";
+					}
+
+					public String timer(final String expires, final String event, final Layer who) {
+						for (final Entry entry : this.hierarchy.graphed)
+						{
+							if (entry.target != who)
+							{
+								continue;
+							}
+
+							try
+							{
+								timeout.register(who.uniqued, event, new Date().getTime() + Integer.parseInt(expires));
+							}
+							catch (Exception eX)
+							{
+								return "invalid";
+							}
+
+							return "success";
+						}
+
 						return "failure";
 					}
 
@@ -836,6 +955,18 @@ public class StackOfMachinery {
 							});
 
 						return count.value();
+					}
+
+					public String blast(final String event, final Layer who) {
+						this.hierarchy.visitClosure
+							( who
+							, new OnGraphedEntries() {
+								public void onVisit(final Layer target) {
+									queuing.add(new Event(event, target));
+								}
+							});
+						
+						return "success";
 					}
 
 					public String raise(final String event, final Layer who) {
