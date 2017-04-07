@@ -33,6 +33,8 @@
 			}, {
 				"event": "leaving",
 				"state": "tst07"
+			}, {
+				"state": "pivot"
 			}]
 		}, {
 			"label": "tst01",

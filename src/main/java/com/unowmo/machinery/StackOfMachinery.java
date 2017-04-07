@@ -533,14 +533,14 @@ public class StackOfMachinery {
 
 								break;
 							}
-							
+
 							++i;
-							
+
 							if (i == this.machine.states.length)
 							{
 								i = 0;
 							}
-							
+
 							if (i == this.current)
 							{
 								break;
@@ -553,17 +553,20 @@ public class StackOfMachinery {
 						}
 						else
 						{
-							resolve.log
-								( String.format
-									( "(%s) state '%s' on '%s' -> '%s' is invalid transition (not found)"
-									, this.uniqued
-									, state.label
-									, external
-									, followTo
-									)
-								);
+							if (state.label.equalsIgnoreCase(followTo) == false)
+							{
+								resolve.log
+									( String.format
+										( "(%s) state '%s' on '%s' -> '%s' is invalid transition (not found)"
+										, this.uniqued
+										, state.label
+										, external
+										, followTo
+										)
+									);
+							}
 							
-							followTo = "";
+							break;
 						}
 
 						if (followTo.isEmpty() == true)
