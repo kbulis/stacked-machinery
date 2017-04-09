@@ -43,7 +43,7 @@ public class ModuleTest {
 
 			stacked.setResolve
 				( new AxionTaskResolve() {
-					public String execute(final String axionLabel, final LabeledValuePair ... axionPairs) {
+					public String execute(final String axionLabel, final Update axionValue, final LabeledValuePair ... axionPairs) {
 						return "success";
 					}
 					public void command(final String eventCommand, final String eventStatus) {

@@ -1,5 +1,7 @@
 package com.unowmo.machinery;
 
+import java.util.*;
+
 /**
  * Contract for machine stack container that is executed when machine activity
  * causes transition into or from a state with defined axions. 
@@ -10,8 +12,39 @@ package com.unowmo.machinery;
 public abstract class AxionTaskResolve {
 
 	/**
-	 * Container for command parameters as specified by machine states for each
-	 * axion (enter or leave). 
+	 * Container of frame updates to track after axion processing completes.
+	 */
+	public static class Update implements Iterable<LabeledValuePair> {
+		List<LabeledValuePair> list = new ArrayList<LabeledValuePair>();
+
+		public boolean hasUpdate() {
+			return this.list.isEmpty() == false;
+		}
+		
+		public Iterator<LabeledValuePair> iterator() {
+			return this.list.iterator();
+		}
+
+		public Update add(final String label, final String value) {
+			this.list.add(new LabeledValuePair(label, value));
+			
+			return this;
+		}
+
+		public Update pop() {
+			if (this.list.isEmpty() == false)
+			{
+				this.list.remove(0);
+			}
+			
+			return this;
+		}
+
+	}
+
+	/**
+	 * Container for command parameters as specified by machine states for
+	 * each axion (enter or leave). 
 	 */
 	public static class Part {
 
@@ -31,17 +64,18 @@ public abstract class AxionTaskResolve {
 		}
 
 	}
-	
+
 	/**
 	 * Handles labeled axion and produces result event (or empty if no event
 	 * intended).
 	 * 
 	 * @param axionLabel label of axion to execute
+	 * @param axionValue value container for frame
 	 * @param axionPairs pairs of named-value args
 	 * 
 	 * @return string response for follow on
 	 */
-	protected abstract String execute(final String axionLabel, final LabeledValuePair ... axionPairs);
+	protected abstract String execute(final String axionLabel, final Update axionValue, final LabeledValuePair ... axionPairs);
 
 	/**
 	 * Broadcast to container from handling entity arbitrary command with

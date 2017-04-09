@@ -34,7 +34,7 @@ public class StackOfMachinery {
 		/**
 		 * Default implementation.
 		 */
-		protected String execute(final String axionLabel, final LabeledValuePair ... axionPairs) {
+		protected String execute(final String axionLabel, final Update axionValue, final LabeledValuePair ... axionPairs) {
 			return "";
 		}
 
@@ -308,16 +308,40 @@ public class StackOfMachinery {
 											);
 									}
 									else
+									if (part.label.equalsIgnoreCase("nix") == true)
+									{
+										this.evict
+											( part.valueOf("label", "")
+											);
+									}
+									else
 									if (part.label.equalsIgnoreCase("pop") == true)
 									{
 										this.pop();
 									}
 									else
 									{
+										AxionTaskResolve.Update data = new AxionTaskResolve.Update();
+
 										resolve.execute
 											( part.label
+											, data
 											, part.list
 											);
+										
+										for (final LabeledValuePair pair : data)
+										{
+											this.apply(pair.label, pair.value);
+											
+											break;
+										}
+										
+										data.pop();
+										
+										for (final LabeledValuePair pair : data)
+										{
+											this.accum(pair.label, pair.value);
+										}
 									}
 								}
 								
@@ -465,6 +489,28 @@ public class StackOfMachinery {
 											);
 									}
 									else
+									if (part.label.equalsIgnoreCase("has") == true)
+									{
+										String value = this.fetchIt(part.valueOf("label", ""), "");
+
+										opRes = "success";
+										
+										if (value.equalsIgnoreCase("") == true)
+										{
+											opRes = "missing";
+										}
+										
+										resolve.log
+											( String.format
+												( "(%s) axion '%s' of '%s' <- '%s'"
+												, this.uniqued
+												, part.label
+												, value
+												, opRes
+												)
+											);
+									}
+									else
 									if (part.label.equalsIgnoreCase("set") == true)
 									{
 										opRes = "success";
@@ -472,6 +518,15 @@ public class StackOfMachinery {
 										this.apply
 											( part.valueOf("label", "")
 											, part.valueOf("value", "")
+											);
+									}
+									else
+									if (part.label.equalsIgnoreCase("nix") == true)
+									{
+										opRes = "success";
+
+										this.evict
+											( part.valueOf("label", "")
 											);
 									}
 									else
@@ -500,10 +555,27 @@ public class StackOfMachinery {
 									}
 									else
 									{
+										AxionTaskResolve.Update data = new AxionTaskResolve.Update();
+										
 										opRes = resolve.execute
 											( part.label
+											, data
 											, part.list
 											);
+
+										for (final LabeledValuePair pair : data)
+										{
+											this.apply(pair.label, pair.value);
+											
+											break;
+										}
+										
+										data.pop();
+										
+										for (final LabeledValuePair pair : data)
+										{
+											this.accum(pair.label, pair.value);
+										}
 									}
 
 									// After processing any associated entry axion, we
@@ -777,6 +849,30 @@ public class StackOfMachinery {
 			return ifNoMatch;
 		}
 
+		String fetchIt(final String label, final String ifNoMatch) {
+			for (final Frame frame : this.frames)
+			{
+				for (final Value match : frame.values)
+				{
+					if (match.label.equalsIgnoreCase(label) == true)
+					{
+						return match.value;
+					}
+				}
+				
+				break;
+			}
+
+			return ifNoMatch;
+		}
+
+		/**
+		 * Works from the current frame backwards to set a matching pair value.
+		 * If not present anywhere, we add the pair to the current frame.
+		 * 
+		 * @param label label of pair to update/add
+		 * @param value value to save
+		 */
 		void apply(final String label, final String value) {
 			for (final Frame frame : this.frames)
 			{
@@ -791,17 +887,67 @@ public class StackOfMachinery {
 				}
 			}
 
-			this.frames.get(0).set
-				( label
-				, value
-				);
+			for (final Frame frame : this.frames)
+			{
+				frame.add
+					( label
+					, value
+					);
+				
+				break;
+			}
+		}
+
+		/**
+		 * Updates existing pair in current frame or adds it if not present.
+		 * 
+		 * @param label label of pair to update/add
+		 * @param value value to save
+		 */
+		void write(final String label, final String value) {
+			for (final Frame frame : this.frames)
+			{
+				frame.set
+					( label
+					, value
+					);
+				
+				break;
+			}
+		}
+
+		/**
+		 * Appends pair to current frame even if already existing in array.
+		 * 
+		 * @param label label of pair to add
+		 * @param value value to save
+		 */
+		void accum(final String label, final String value) {
+			for (final Frame frame : this.frames)
+			{
+				frame.add
+					( label
+					, value
+					);
+				
+				break;
+			}
 		}
 		
-		void write(final String label, final String value) {
-			this.frames.get(0).set
-				( label
-				, value
-				);
+		/**
+		 * Removes pair with specified label. If multiple, removes first.
+		 * 
+		 * @param label label of pair to add
+		 */
+		void evict(final String label) {
+			for (final Frame frame : this.frames)
+			{
+				frame.nix
+					( label
+					);
+				
+				break;
+			}
 		}
 
 		void push() {
@@ -846,10 +992,37 @@ public class StackOfMachinery {
 					}
 				}
 				
-				this.values.add(new Value(label, value));
+				this.values.add
+					( new Value(label, value)
+					);
+			}
+		}
+
+		void add(final String label, final String value) {
+			if (label.isEmpty() == false)
+			{
+				this.values.add
+					( new Value(label, value)
+					);
 			}
 		}
 		
+		void nix(final String label) {
+			int i = 0;
+			
+			for (final Value match : this.values)
+			{
+				if (match.label.equalsIgnoreCase(label) == true)
+				{
+					this.values.remove(i);
+
+					break;
+				}
+				
+				++i;
+			}
+		}
+
 	}
 
 	/**
