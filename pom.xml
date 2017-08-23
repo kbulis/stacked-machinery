@@ -3,28 +3,28 @@
 	<name>StackedMachinery</name>
 	<groupId>com.unowmo.code.stacked-machinery</groupId>
 	<artifactId>stacked-machinery</artifactId>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<packaging>jar</packaging>
 	<description>Stacked state machinery with container-specific axion handling.</description>
-	<url>https://github.com/unowmo/stacked-machinery</url>
+	<url>https://github.com/kbulis/stacked-machinery</url>
 	<licenses>
 		<license>
-			<name>MIT License</name>
-			<url>https://opensource.org/licenses/mit-license.php</url>
+			<name>ISC License</name>
+			<url>https://opensource.org/licenses/ISC</url>
 		</license>
 	</licenses>
 	<developers>
 		<developer>
 			<name>Kirk Bulis</name>
-			<email>kirk@unowmo.com</email>
+			<email>kirk.d.bulis@gmail.com</email>
 			<organization>UNowMo, LLC</organization>
 			<organizationUrl>http://unowmo.com</organizationUrl>
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:git:git://github.com/unowmo/stacked-machinery.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:unowmo/stacked-machinery.git</developerConnection>
-		<url>https://github.com/unowmo/stacked-machinery/tree/master</url>
+		<connection>scm:git:git://github.com/kbulis/stacked-machinery.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:kbulis/stacked-machinery.git</developerConnection>
+		<url>https://github.com/kbulis/stacked-machinery/tree/master</url>
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
